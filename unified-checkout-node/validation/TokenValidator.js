@@ -33,7 +33,9 @@ const JWKS_HOSTS = {
 const ALLOWED_CLIENT_LIBRARY_HOSTS = new Set([
   'flex.cybersource.com',
   'testflex.cybersource.com',
-  'flex.test.cybersource.com'
+  'flex.test.cybersource.com',
+  'up.cybersource.com',
+  'testup.cybersource.com'
 ]);
 
 /**
@@ -214,9 +216,15 @@ async function verifyAndDecodeToken(token) {
     throw new Error('Token must be a non-empty string');
   }
 
+  // Form textareas can add indentation and newlines around the JWT.
+  const normalizedToken = token.trim();
+  if (!normalizedToken) {
+    throw new Error('Token must be a non-empty string');
+  }
+
   let decoded;
   try {
-    decoded = decodeJWT(token);
+    decoded = decodeJWT(normalizedToken);
   } catch (error) {
     throw new Error(`Failed to decode token: ${error.message}`);
   }
@@ -242,7 +250,7 @@ async function verifyAndDecodeToken(token) {
 
   let verifiedPayload;
   try {
-    verifiedPayload = jwt.verify(token, publicKey, {
+    verifiedPayload = jwt.verify(normalizedToken, publicKey, {
       algorithms: ALLOWED_ALGORITHMS
     });
   } catch (error) {
